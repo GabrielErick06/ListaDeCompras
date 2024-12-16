@@ -1,15 +1,13 @@
 package com.example.listadecompras
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.ListView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.listadecompras.databinding.ActivityMainBinding
+import java.text.NumberFormat
+import java.util.Locale
 
 
 class MainActivity : AppCompatActivity() {
@@ -18,7 +16,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
@@ -28,35 +25,32 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val productsAdapter  = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
+        val productsAdapter = ProductAdapter(this)
+        productsAdapter.addAll(productGlobal)
 
         //definindo o adaptador na lista.
         binding.listViewProducts.adapter = productsAdapter
 
         //definindo ação do botão
-        binding.btnInsert.setOnClickListener {
-            val txtProduct = binding.txtProduct.text
-            val product = txtProduct.toString()
+        binding.btnAddItem.setOnClickListener {
+            //iniciando a Activity
+            val intent = Intent(this, RegistrationActivity::class.java)
+            startActivity(intent)
+        }
+    }
 
-            if (product.isNotEmpty()){
-            productsAdapter.add(product)
-            println("Gabe " + product)
-            binding.txtProduct.text.clear()
-        }else{
-            binding.txtProduct.error = "Preencha o campo!"
-            }
-            //Buscando item clicado
-            binding.listViewProducts.setOnItemLongClickListener { adapterView: AdapterView<*>, view : View, position: Int, id: Long->
-                val item  = productsAdapter.getItem(position)
+    override fun onResume() {
 
-                //Removendo item clicado
-                productsAdapter.remove(item)
+        super.onResume()
 
-                //retorno indicando que o click foi realizado com sucesso
-                true
-            }
+        val adapter = binding.listViewProducts.adapter as ProductAdapter
+        adapter.clear()
+
+        adapter.addAll(productGlobal)
+        val sum = productGlobal.sumOf { it.price * it.quantity }
+        val f = NumberFormat.getCurrencyInstance(Locale("en", "us"))
+        binding.txtTotal.text = "Total: ${f.format(sum)}"
 
 
     }
-}
 }
